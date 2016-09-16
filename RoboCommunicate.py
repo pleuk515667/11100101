@@ -8,7 +8,7 @@ class RoboCommunicate():
 	def SerialCloseContact():
 		RoboCon.close()
 	#I am not sure about int, python should not have type
-	def SendCommand(int command):
+	def SendCommand(command):
 		RoboCon.write(chr(command))
 
 	def ReadData():
