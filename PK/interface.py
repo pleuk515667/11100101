@@ -31,42 +31,61 @@ def readStatus():
 
 #task2
 class robot:
+    #initialize global variable
     powerButton = 0.0
     currentMode = 0.0
     Wheel = 235.0
     diameter = 72.0
-    tick
+    
+    #go to start mode
     def toStart():
         writeCommand(128)
         currentMode = 128
+        
+    #go to safe mode
     def toSafe():
         toStart()
         time.sleep(0.05)
         writeCommand(131)
         currentMode = 131
+        
+    #go to Full mode
     def toFull():
         writeCommand(132)
         currentMode = 132
+    
+    #go to reset mode
     def toReset():
         toStart()
         time.sleep(0.05)
         writeCommand(7)
         currentMode = 7
+    
+    #go to Stop mode
     def toStop():
         toStart()
         time.sleep(0.05)
         writeCommand(173)
         currentMode = 173
+    
+    #initialize the robot class, First thing to call
     def initialize():
         print "initialize Roomba....Connect to Port"
         portConnect()
         currentMode = 0
         powerButton = 0
+    
+    #convert to bynay string
     def toBinaryString(input):
         s = ''.join([chr(input)])
         return s
+    
+    #read button state
     def readButton():
         #todo
+        
+    #this fuction will drive the robot by calling the drive function
+    #set spped and radius and turn clockwise and couter clockwise
     def drive(speed, radius, turn):
         if type(speed) != type 42:
             speed = int(speed)
@@ -93,7 +112,7 @@ class robot:
         writeCommand(speedLow)
         writeCommand(radiusHi)
         writeCommand(radiusLow)
-
+#calling drive and sending data to drive
     def go(speed=0,deg=0):
         if speed == 0:
             rad = math.radians(deg_per_sec)
@@ -117,6 +136,8 @@ class robot:
                 rad = -32767
             drive(finalSpeed, rad)
         return
+    
+#spit value in to high and low
     def splitTo2Byte(value):
         bitValue;
         if value >= 0:
