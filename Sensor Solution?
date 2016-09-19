@@ -1,0 +1,26 @@
+I think we have the serial.read working. This should work for what we need to read sensor data.
+
+readStat Function:
+data = serial.read(1)
+byte = struct.unpack('B',data)[0]
+
+Then have a function for checking each bit:
+
+bool(byte & 0x00) 1st
+bool(byte & 0x02) 2nd
+bool(byte & Ox04) 3rd
+bool(byte & 0x08) 4th
+bool(byte & 0x10) 5th
+bool(byte & 0x20) 6th
+bool(byte & 0x40) 7th
+bool(byte & 0x80) 8th
+
+pass the return into a check function:
+
+if(bool == True):
+	then active
+
+else
+	then nonactive
+
+Hopefully then we will have a working sensor check.
