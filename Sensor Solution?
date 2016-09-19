@@ -24,3 +24,64 @@ else
 	then nonactive
 
 Hopefully then we will have a working sensor check.
+
+def read1stBit(self, byte):
+        if(bool(byte & 0x00) == True):
+            return true
+        else:
+            return 
+
+    def read2ndBit(self, byte):
+        if(bool(byte & 0x02) == True):
+            return true
+        else:
+            return false
+
+    def read3rdBit(self, byte):
+        if(bool(byte & 0x04) == True):
+            return true
+        else:
+            return false
+
+    def read4thBit(self, byte):
+        if(bool(byte & 0x08) == True):
+            return true
+        else:
+            return false
+
+    def read5thBit(self, byte):
+        if(bool(byte & 0x10) == True):
+            return true
+        else:
+            return false
+
+    def read6thBit(self, byte):
+        if(bool(byte & 0x20) == True):
+            return true
+        else:
+            return false
+
+    def read7thBit(self, byte):
+        if(bool(byte & 0x40) == True):
+            return true
+        else:
+            return false
+
+    def read8thBit(self, byte):
+        if(bool(byte & 0x80) == True):
+            return true
+        else:
+            return false
+            
+r = interfaceRobot.Robot()
+r.initialize()
+time.sleep(1)
+r.toStart()
+time.sleep(1)
+r.toSafe()
+time.sleep(1)
+r.writeCommand(142)
+time.sleep(1)
+r.writeCommand(18)
+time.sleep(1)
+print r.read1stBit(r.readStatus())
