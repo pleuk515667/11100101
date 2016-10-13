@@ -75,20 +75,30 @@ class Robot:
     		byte = self.readStatus()
     		byte = "{0:04b}".format(byte)
     		return byte
-    def readingClift(self):
-    	  #self.writeCommand(149)
-    	  #self.writeCommand(4)
-    	  #self.writeCommand(9)
-    	  #self.writeCommand(10)
-    	  #self.writeCommand(11)
-    	  #self.writeCommand(12)
-    	  #data = self.ser.read(1) + self.ser.read(2) 
-    	  #byte1 =  str(struct.unpack('B',data[0])[0] )  + str(struct.unpack('B',data[1])[0])
-    	  #byte = "{0:04b}".format(byte)
+        
+    def readingCliffLeft(self):
     	  self.writeCommand(142)
     	  self.writeCommand(9)
-    	  byte1 = self.readStatus()
-    	  return byte1
+    	  byte = self.readStatus()
+    	  return byte
+    
+    def readingCliffRight(self):
+    	  self.writeCommand(142)
+    	  self.writeCommand(12)
+    	  byte = self.readStatus()
+    	  return byte
+    
+    def readingCliffLeftFront(self):
+    	  self.writeCommand(142)
+    	  self.writeCommand(10)
+    	  byte = self.readStatus()
+    	  return byte
+    
+    def readingCliffLeftRight(self):
+    	  self.writeCommand(142)
+    	  self.writeCommand(11)
+    	  byte = self.readStatus()
+    	  return byte
         
     #This function will drive the robot by calling the drive function
     #set speed and radius and turn clockwise and counter clockwise
