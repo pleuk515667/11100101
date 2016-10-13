@@ -68,7 +68,7 @@ def sensorCheck():
 				check = 2
 			if(b2 == '1'):
 				check = 3
-			if(b3 == '1' || b4 = '1'):
+			if(b3 == '1' or b4 = '1'):
 				check = 4
 			time.sleep(0.015)
 
