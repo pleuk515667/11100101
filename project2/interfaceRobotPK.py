@@ -99,6 +99,15 @@ class Robot:
     	  self.writeCommand(11)
     	  byte = self.readStatus()
     	  return byte
+    
+    def checkCliffs(self):
+        status = 0
+        status = self.readingCliffLeft() + self.readingCliffRight() + self.readingCliffLeftFront() + self.readingCliffRightFront()
+        
+        if(status > 0):
+            return 1
+        
+        return 0
         
     #This function will drive the robot by calling the drive function
     #set speed and radius and turn clockwise and counter clockwise
