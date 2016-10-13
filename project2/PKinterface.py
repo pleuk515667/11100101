@@ -1,7 +1,6 @@
 import serial
 import time
 import struct
-import thread
 import math
 
 class Robot:
@@ -14,8 +13,8 @@ class Robot:
         self.diameter = 72.0
 
     #Opening serial port    
-  	def portOpen(self):
-  		self.ser.open()
+    def portOpen(self):
+    	self.ser.open()
 
     #closing serial port
     def portClose(self):
@@ -28,9 +27,9 @@ class Robot:
     #read command from the port
     def readStatus(self):
         data = self.ser.read(1)
-        byte = 0
-        if(data != 0):
-        	byte = struct.unpack('B',data)[0]
+        byte = -1
+        if (data != ''):
+            byte = struct.unpack('B',data)[0]
         return byte           
        
     #go to start mode
@@ -70,6 +69,12 @@ class Robot:
     		byte = "{0:04b}".format(byte)
     		return byte
 
+    def readingButton(self):
+    		self.writeCommand(142)
+    		self.writeCommand(18)
+    		byte = self.readStatus()
+    		byte = "{0:04b}".format(byte)
+    		return byte
     def readingClift(self):
     	  #self.writeCommand(149)
     	  #self.writeCommand(4)
@@ -157,11 +162,48 @@ class Robot:
             speedLeft = 500
         speedRightHi, speedRightLow = self.splitTo2Byte(speedRight)
         speedLeftHi, speedLeftLow = self.splitTo2Byte(speedLeft)
-        self.writeCommand(137)
+        self.writeCommand(145)
         self.writeCommand(speedRightHi)
         self.writeCommand(speedRightLow)
         self.writeCommand(speedLeftHi)
         self.writeCommand(speedLeftLow)
+
+    def setWarningSong(self):
+        self.writeCommand(140)
+        self.writeCommand(1)
+        self.writeCommand(4)
+        self.writeCommand(40)
+        self.writeCommand(32)
+        self.writeCommand(39)  
+        self.writeCommand(32)
+        self.writeCommand(38)
+        self.writeCommand(32)
+        self.writeCommand(37)  
+        self.writeCommand(64)
+
+
+    def playWarningSong(self):
+        self.writeCommand(141)
+        self.writeCommand(1)
+
+    def setStartSong(self):
+        self.writeCommand(140)
+        self.writeCommand(0)
+        self.writeCommand(4)
+        self.writeCommand(86)
+        self.writeCommand(32)
+        self.writeCommand(87)  
+        self.writeCommand(32)
+        self.writeCommand(88)
+        self.writeCommand(32)
+        self.writeCommand(96)  
+        self.writeCommand(64)
+
+
+    def playStartSong(self):
+        self.writeCommand(141)
+        self.writeCommand(0)
+
 
     #spit value in to high and low bitwise
     def splitTo2Byte(self,value):
