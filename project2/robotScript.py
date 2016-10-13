@@ -62,6 +62,8 @@ def sensorCheck():
 			lock.release()
 			b1 = byte[3]
 			b2 = byte[2]
+			b3 = byte[1]
+			b4 = byte[0]
 			if(b1 == '1'):  
 				check = 2
 			if(b2 == '1'):
