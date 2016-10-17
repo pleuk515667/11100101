@@ -3,29 +3,41 @@ import time
 import struct
 import math
 
-
+'''
+Authors Notes (delete before submission):
+-Is the 'currentMode' variable necessary? Consider removing it.
+-I think the problem we've been having with querying multiple bytes of sensor data is with the
+  "readStatus()" function, as it is coded to only read one byte. Consider making another
+  function or modifying the existing one to read a variable number of bytes.
+-Is the "toBinaryString()" function used at all? Consider removal.
+'''
 class Robot:
     # task1: open port write port and read port
     # initialize the robot class, connect the serial, and set the variable
+
+    #The initialization function, which begins the serial
+    # communication with the robot and initializes particular values.
     def __init__(self):
         self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
         self.currentMode = 0.0
+        #These two variables are physical properties of the robot and are used in
+        # the functions that control movement.
         self.Wheel = 235.0
         self.diameter = 72.0
 
-    # Opening serial port
+    #Opens the serial communication port
     def portOpen(self):
         self.ser.open()
 
-    # closing serial port
+    #Closes the port
     def portClose(self):
         self.ser.close()
 
-    # write command to the port
+    #Used to send Interface Commands to the robot
     def writeCommand(self, input):
         self.ser.write(chr(input))
 
-    # read command from the port
+    #Returns one byte of data read from the robot
     def readStatus(self):
         data = self.ser.read(1)
         byte = -1
@@ -33,28 +45,28 @@ class Robot:
             byte = struct.unpack('B', data)[0]
         return byte
 
-        # go to start mode
-
+    #Changes mode to "Passive"
     def toStart(self):
         self.writeCommand(128)
         self.currentMode = 128
 
-    # go to safe mode
+    #Changes mode to "Safe"
     def toSafe(self):
         self.writeCommand(131)
         self.currentMode = 131
 
-    # go to Full mode
+    #Changes mode to "Full"
     def toFull(self):
         self.writeCommand(132)
         self.currentMode = 132
 
-    # go to reset mode
+    #Resets the robot, as if the battery had been removed and reinserted.
+    # Changes mode to "Off". Start command must be sent to re-enter Open Interface mode.
     def toReset(self):
         self.writeCommand(7)
         self.currentMode = 7
 
-    # go to Stop mode
+    #Changes mode to "Off"
     def toStop(self):
         self.writeCommand(173)
         self.currentMode = 173
@@ -64,6 +76,8 @@ class Robot:
         s = ''.join([chr(input)])
         return s
 
+    #The following seven functions  read sensor data from the robot, then return that
+    # data in byte form.
     def readingBumpWheel(self):
         self.writeCommand(142)
         self.writeCommand(7)
