@@ -3,14 +3,7 @@ import time
 import struct
 import math
 
-'''
-Authors Notes (delete before submission):
--Is the 'currentMode' variable necessary? Consider removing it.
--I think the problem we've been having with querying multiple bytes of sensor data is with the
-  "readStatus()" function, as it is coded to only read one byte. Consider making another
-  function or modifying the existing one to read a variable number of bytes.
--Is the "toBinaryString()" function used at all? Consider removal.
-'''
+
 class Robot:
     # task1: open port write port and read port
     # initialize the robot class, connect the serial, and set the variable
@@ -19,7 +12,6 @@ class Robot:
     # communication with the robot and initializes particular values.
     def __init__(self):
         self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
-        self.currentMode = 0.0
         #These two variables are physical properties of the robot and are used in
         # the functions that control movement.
         self.Wheel = 235.0
@@ -48,35 +40,30 @@ class Robot:
     #Changes mode to "Passive"
     def toStart(self):
         self.writeCommand(128)
-        self.currentMode = 128
 
     #Changes mode to "Safe"
     def toSafe(self):
         self.writeCommand(131)
-        self.currentMode = 131
 
     #Changes mode to "Full"
     def toFull(self):
         self.writeCommand(132)
-        self.currentMode = 132
 
     #Resets the robot, as if the battery had been removed and reinserted.
     # Changes mode to "Off". Start command must be sent to re-enter Open Interface mode.
     def toReset(self):
         self.writeCommand(7)
-        self.currentMode = 7
 
     #Changes mode to "Off"
     def toStop(self):
         self.writeCommand(173)
-        self.currentMode = 173
 
     # convert to bynay string
     def toBinaryString(self, input):
         s = ''.join([chr(input)])
         return s
 
-    #The following seven functions  read sensor data from the robot, then return that
+    #The following functions read sensor data from the robot, then return that
     # data in byte form.
     def readingBumpWheel(self):
         self.writeCommand(142)
@@ -116,6 +103,24 @@ class Robot:
         byte = self.readStatus()
         return byte
 
+    def readAngle(self):
+        self.writeCommand(142)
+        self.writeCommand(20)
+        data = self.ser.read(2)
+        byte = -1
+        if (data != ''):
+            byte = struct.unpack('>h', data)[0]
+        return byte
+
+    def readDistance(self):
+        self.writeCommand(142)
+        self.writeCommand(19)
+        data = self.ser.read(2)
+        byte = -1
+        if (data != ''):
+            byte = struct.unpack('>h', data)[0]
+        return byte
+
     def checkCliffs(self):
         status = 0
         status = self.readingCliffLeft() + self.readingCliffRight() + self.readingCliffLeftFront() + self.readingCliffRightFront()
@@ -125,7 +130,13 @@ class Robot:
 
         return 0
 
-    # This function will drive the robot by calling the drive function
+    def readingVirtualWall(self):
+        self.writeCommand(142)
+        self.writeCommand(13)
+        byte = self.readStatus()
+        return byte
+
+    #This function will drive the robot by calling the drive function
     # set speed and radius and turn clockwise and counter clockwise
     def drive(self, speed, radius, turn):
         if type(speed) != type(42):

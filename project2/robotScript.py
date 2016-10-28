@@ -4,8 +4,9 @@ import struct
 import math
 import random
 import threading
+import datetime
 
-#  Initializing Instance Variables...
+#  Initializing Variables...
 #Instance of the interface
 r = interfaceRobotPK.Robot()
 
@@ -19,6 +20,15 @@ check = 99
 #Primarily used by Thread3 (function "buttonPressCheck()")
 buttonState = 0
 
+#Ensures the Log text file is empty and writes the first line
+with open('outputLog.txt', 'w') as f:
+    f.write("\nBeginning Log...\n")
+
+#Reading these two sensor packets allows them to be initialized to a "zero" value
+r.readDistance()
+r.readAngle()
+
+
 '''
 The following functions all correspond to a running thread.
   A lock variable is used to determine which thread has control of the robot at any
@@ -30,15 +40,28 @@ The following functions all correspond to a running thread.
 # movement actions to be taken by the robot.
 def running():
     global check
+    global buttonState
     while 1:
+        if (check == 4):
+            print "Wheel drop detected!"
+            lock.acquire()
+            r.driveDirect(0, 0)
+            r.playWarningSong()
+            #r.toStop() ??
+            currTime = datetime.datetime.now()
+            dist = r.readDistance()
+            angle = r.readAngle()
+            with open('outputLog.txt', 'a') as f:
+                f.write("<{0}>,<{1}>,<{2}>\n".format(currTime, dist, angle))
+            lock.release()
+            buttonState = 0
+            check = 99
         if (check == 1):
-            x = random.randint(5, 10) * 2
-            y = random.randint(5, 10) * 2
+            x = 8
             print "runing"
             print x
-            print y
             lock.acquire()
-            r.driveDirect(x, y)
+            r.driveDirect(x, x)
             lock.release()
             check = 99
         if (check == 0):
@@ -48,6 +71,11 @@ def running():
             time.sleep(1)
             r.playWarningSong()
             time.sleep(3)
+            currTime = datetime.datetime.now()
+            dist = r.readDistance()
+            angle = r.readAngle()
+            with open('outputLog.txt', 'a') as f:
+                f.write("<{0}>,<{1}>,<{2}>\n".format(currTime, dist, angle))
             lock.release()
             check = 99
         if (check == 2):
@@ -57,11 +85,17 @@ def running():
             time.sleep(0.3)
             r.go(-5, 0)
             time.sleep(1)
-            x = random.randint(5, 10) * 2
-            y = random.randint(3, 5) * 2
-            r.driveDirect(x, y)
+            x = random.randint(5, 10)
+            y = random.randint(1, 3)
+            r.driveDirect(x, -x)
+            time.sleep(y)
+            currTime = datetime.datetime.now()
+            dist = r.readDistance()
+            angle = r.readAngle()
+            with open('outputLog.txt', 'a') as f:
+                f.write("<{0}>,<{1}>,<{2}>\n".format(currTime, dist, angle))
             lock.release()
-            check = 99
+            check = 1
         if (check == 3):
             lock.acquire()
             r.driveDirect(0, 0)
@@ -69,17 +103,18 @@ def running():
             time.sleep(0.3)
             r.go(-5, 0)
             time.sleep(1)
-            x = random.randint(3, 5) * 2
-            y = random.randint(5, 10) * 2
-            r.driveDirect(x, y)
+            x = random.randint(1, 3)
+            y = random.randint(5, 10)
+            r.driveDirect(-y, y)
+            time.sleep(x)
+            currTime = datetime.datetime.now()
+            dist = r.readDistance()
+            angle = r.readAngle()
+            with open('outputLog.txt', 'a') as f:
+                f.write("<{0}>,<{1}>,<{2}>\n".format(currTime, dist, angle))
             lock.release()
-            check = 99
-        if (check == 4):
-            lock.aquire()
-            r.driveDirect(0, 0)
-            r.playWarningSong()
-            lock.release()
-            check = 99
+            check = 1
+
 
 #Thread2 will be running this function, whose purpose is to moniter the state of
 # the front bumpers as well as the wheel drop sensors.
@@ -91,14 +126,14 @@ def sensorCheck():
         lock.release()
         b1 = byte[3]
         b2 = byte[2]
-        # b3 = byte[1]
-        # b4 = byte[0]
+        b3 = byte[1]
+        b4 = byte[0]
         if (b1 == '1'):
             check = 2
         if (b2 == '1'):
             check = 3
-        # if (b3 == '1' or b4 == '1'):
-        #    check = 4
+        if (b3 == '1' or b4 == '1'):
+            check = 4
         time.sleep(0.015)
 
 #Thread3 will be running this funtion, whose purpose is to moniter the state of
@@ -111,27 +146,15 @@ def buttonPressCheck():
         byte = r.readingButton()
         lock.release()
         button = byte[3]
-        print button
-        if (button == 1 and buttonState == 0):
-            print 'reached first if'
-            # if(r.checkCliffs() == 1):
-            #    check = 4
-            # else:
-            #    check = 1
+        if (button == '1' and buttonState == 0):
             check = 1
             time.sleep(1)
             buttonState = 1
             button = 0
-        if (button == 1 and buttonState == 1):
-            print 'reached second if'
-            # if(r.checkCliffs() == 1):
-            #    check = 4
-            # else:
-            #    check = 0
+        if (button == '1' and buttonState == 1):
             check = 0
             time.sleep(1)
             buttonState = 0
-        print 'past ifs reached'
         time.sleep(0.015)
 
 #Thread4 will be running this function, whose purpose is to moniter the cliff
@@ -142,23 +165,25 @@ def cliffWheelCheck():
     while 1:
 
         lock.acquire()
-        '''
         cliffLeft = r.readingCliffLeft()
         cliffRight = r.readingCliffRight()
         cliffLeftFront = r.readingCliffLeftFront()
         cliffRightFront = r.readingCliffRightFront()
-        '''
         lock.release()
         anyCliff = cliffLeft + cliffRight + cliffLeftFront + cliffRightFront
-        print anyCliff
+        #print anyCliff
         if (anyCliff > 0):
-            check = 4
+            check = 3
+            print "Cliff detected!"
+        else:
+            check = 99
 
         time.sleep(0.015)
 
 #The following are a series of "sleep" commands and commands that change the mode of the
 # robot. After the robot is in the appropriate mode, the Start and Warning songs are set.
 # Finally, the thread variables are initialized and the threads are started.
+
 time.sleep(2)
 print "Stop"
 r.toStop()
@@ -167,14 +192,14 @@ print "Start"
 r.toStart()
 time.sleep(2)
 print "Full"
-r.toSafe()
+r.toFull()
 time.sleep(2)
 r.setStartSong()
 time.sleep(1)
 r.setWarningSong()
 time.sleep(1)
 r.playStartSong()
-time.sleep(4)
+time.sleep(2)
 t1 = threading.Thread(name='running', target=running)
 t2 = threading.Thread(name='sensorCheck', target=sensorCheck)
 t3 = threading.Thread(name='buttonPressCheck', target=buttonPressCheck)
