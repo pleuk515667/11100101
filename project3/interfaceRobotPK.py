@@ -3,10 +3,20 @@ import time
 import struct
 import math
 
-
+START = 128
+SAFE = 131
+RESET = 7
+FULL = 132
+SENSOR = 142
+WRITE_SONG = 140
+PLAY_SONG = 141
+IR_LEFT = 52
+IR_RIGHT = 53
 class Robot:
     # task1: open port write port and read port
     # initialize the robot class, connect the serial, and set the variable
+
+
     def __init__(self):
         self.ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1)
         self.currentMode = 0.0
@@ -36,23 +46,23 @@ class Robot:
         # go to start mode
 
     def toStart(self):
-        self.writeCommand(128)
-        self.currentMode = 128
+        self.writeCommand(START)
+        self.currentMode = START
 
     # go to safe mode
     def toSafe(self):
-        self.writeCommand(131)
-        self.currentMode = 131
+        self.writeCommand(SAFE)
+        self.currentMode = SAFE
 
     # go to Full mode
     def toFull(self):
-        self.writeCommand(132)
-        self.currentMode = 132
+        self.writeCommand(FULL)
+        self.currentMode = FULL
 
     # go to reset mode
     def toReset(self):
-        self.writeCommand(7)
-        self.currentMode = 7
+        self.writeCommand(RESET)
+        self.currentMode = RESET
 
     # go to Stop mode
     def toStop(self):
@@ -65,39 +75,39 @@ class Robot:
         return s
 
     def readingBumpWheel(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(7)
         byte = self.readStatus()
         byte = "{0:04b}".format(byte)
         return byte
 
     def readingButton(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(18)
         byte = self.readStatus()
         byte = "{0:04b}".format(byte)
         return byte
 
     def readingCliffLeft(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(9)
         byte = self.readStatus()
         return byte
 
     def readingCliffRight(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(12)
         byte = self.readStatus()
         return byte
 
     def readingCliffLeftFront(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(10)
         byte = self.readStatus()
         return byte
 
     def readingCliffRightFront(self):
-        self.writeCommand(142)
+        self.writeCommand(SENSOR)
         self.writeCommand(11)
         byte = self.readStatus()
         return byte
@@ -191,7 +201,7 @@ class Robot:
         self.writeCommand(speedLeftLow)
 
     def setWarningSong(self):
-        self.writeCommand(140)
+        self.writeCommand(WRITE_SONG)
         self.writeCommand(1)
         self.writeCommand(4)
         self.writeCommand(40)
@@ -204,11 +214,11 @@ class Robot:
         self.writeCommand(64)
 
     def playWarningSong(self):
-        self.writeCommand(141)
+        self.writeCommand(PLAY_SONG)
         self.writeCommand(1)
 
     def setStartSong(self):
-        self.writeCommand(140)
+        self.writeCommand(WRITE_SONG)
         self.writeCommand(0)
         self.writeCommand(4)
         self.writeCommand(86)
@@ -221,8 +231,18 @@ class Robot:
         self.writeCommand(64)
 
     def playStartSong(self):
-        self.writeCommand(141)
+        self.writeCommand(PLAY_SONG)
         self.writeCommand(0)
+
+    def infraredLeft(self):
+        self.writeCommand(IR_LEFT)
+        byte = self.readStatus()
+        return byte
+        
+    def infraredRight(self):
+        self.writeCommand(IR_RIGHT)
+        byte = self.readStatus()
+        return byte
 
     # spit value in to high and low bitwise
     def splitTo2Byte(self, value):
