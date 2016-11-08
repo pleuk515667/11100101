@@ -38,9 +38,11 @@ def running():
         if (check == ADJUST):
             print "Adjust"
             if (u_t > 0):
-                speed_left -= u_t
+                speed_left -= u_t/2
+                speed_right += u_t/2
             else:
-                speed_right -= u_t
+                speed_right -= u_t/2
+                speed_left += u_t/2
             lock.acquire()
             r.driveDirect(speed_left, speed_right)
             lock.release()
@@ -79,7 +81,7 @@ def PID_Control():
     x_3 = 0
     while 1:
         lock.acquire()
-        wallDist = r.infraredLeft()
+        wallDist = r.lightBumpLeft()
         lock.release()
         if (x1 != 0 or x2 != 0 or x3 != 0):
             e_1 = x_1 - setPoint
