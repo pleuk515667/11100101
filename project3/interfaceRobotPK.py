@@ -10,8 +10,9 @@ FULL = 132
 SENSOR = 142
 WRITE_SONG = 140
 PLAY_SONG = 141
-IR_LEFT = 52
-IR_RIGHT = 53
+LB = 45
+LB_LEFT = 46
+LB_RIGHT = 51
 class Robot:
     # task1: open port write port and read port
     # initialize the robot class, connect the serial, and set the variable
@@ -234,13 +235,28 @@ class Robot:
         self.writeCommand(PLAY_SONG)
         self.writeCommand(0)
 
-    def infraredLeft(self):
-        self.writeCommand(IR_LEFT)
-        byte = self.readStatus()
-        return byte
+    def lightBumpLeft(self):
+        self.writeCommand(SENSOR)
+        self.writeCommand(LB_LEFT)
+        data = self.ser.read(2)
+        2_byte = -1
+        if (data != ''):
+          2_byte = struct.unpack('>h', data)[0]
+        return 2_byte
+
         
-    def infraredRight(self):
-        self.writeCommand(IR_RIGHT)
+    def lightBumpRight(self):
+        self.writeCommand(SENSOR)
+        self.writeCommand(LB_RIGHT)
+        data = self.ser.read(2)
+        2_byte = -1
+        if (data != ''):
+          2_byte = struct.unpack('>h', data)[0]
+        return 2_byte
+
+    def lightBumper(self):
+        self.writeCommand(SENSOR)
+        self.writeCommand(LB)
         byte = self.readStatus()
         return byte
 
