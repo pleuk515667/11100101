@@ -1,3 +1,12 @@
+'''
+Class: CSCE 274-002 Group 2
+Assignment: Project 2
+Date: October 27, 2016
+Authors: Nicholas Belegrinos, Bradley Follet, Nattapon Donratanapat
+Description: This is the interface file for the assignment. All general use
+    functions are defined in here.
+'''
+
 import serial
 import time
 import struct
@@ -13,6 +22,7 @@ PLAY_SONG = 141
 LB = 45
 LB_LEFT = 46
 LB_RIGHT = 51
+LB_CR = 49
 class Robot:
     # task1: open port write port and read port
     # initialize the robot class, connect the serial, and set the variable
@@ -239,27 +249,36 @@ class Robot:
         self.writeCommand(SENSOR)
         self.writeCommand(LB_LEFT)
         data = self.ser.read(2)
-        2_byte = -1
+        byte = -1
         if (data != ''):
-          2_byte = struct.unpack('>h', data)[0]
-        return 2_byte
+          byte = struct.unpack('>h', data)[0]
+        return byte
 
         
     def lightBumpRight(self):
         self.writeCommand(SENSOR)
         self.writeCommand(LB_RIGHT)
         data = self.ser.read(2)
-        2_byte = -1
+        byte = -1
         if (data != ''):
-          2_byte = struct.unpack('>h', data)[0]
-        return 2_byte
-
+          byte = struct.unpack('>h', data)[0]
+        return byte
+        
+    def lightBumpCenterRight(self):
+        self.writeCommand(SENSOR)
+        self.writeCommand(LB_CR)
+        data = self.ser.read(2)
+        byte = -1
+        if (data != ''):
+          byte = struct.unpack('>h', data)[0]
+        return byte
+        
     def lightBumper(self):
         self.writeCommand(SENSOR)
         self.writeCommand(LB)
         byte = self.readStatus()
         return byte
-
+        
     # spit value in to high and low bitwise
     def splitTo2Byte(self, value):
         bitValue = 0
