@@ -1,7 +1,7 @@
 '''
 Class: CSCE 274-002 Group 2
-Assignment: Project 3
-Date: Nov 15, 2016
+Assignment: Project 5
+Date: December 5th, 2016
 Authors: Nicholas Belegrinos, Bradley Follet, Nattapon Donratanapat
 '''
 
@@ -13,7 +13,7 @@ import random
 import threading
 
 #The following variables are values that allow the threads to "communicate" with eachother.
-# The 'running' thread takes a particular action based on the value of the variable 'check'.
+#The 'running' thread takes a particular action based on the value of the variable 'check'.
 GO = 1
 STOP = 2
 ADJUST = 3
@@ -42,7 +42,7 @@ dockStatus = 0
 
 
 #Function associated with 'thread1'. This function is directly responsible for movement actions taken by the robot.
-# Based of the check value, this function will tell the robot to take a particular action.
+#Based of the check value, this function will tell the robot to take a particular action.
 def running():
     global check
     global speed_left
@@ -50,10 +50,14 @@ def running():
     global u_t
     global setPoint
     while 1:
+
+        #Wheel drop detected; stop robot.
         if (check == WHEEL_DROP):
             print "Wheel drop detected!"
             buttonState = 0
             check = STOP
+
+        #Cliff detected, stop robot.
         if (check == HAZARD):
             lock.acquire()
             r.driveDirect(0, 0)
@@ -62,12 +66,16 @@ def running():
             r.go(-5, 0)
             time.sleep(0.5)
             lock.release()
-            check = HOLD            
+            check = HOLD
+
+        #Drive robot.
         if (check == GO):
             lock.acquire()
             r.driveDirect(int(speed_left), int(speed_right))
             lock.release()
             check = HOLD
+
+        #Stop robot.    
         if (check == STOP):
             print "running 0, 0"
             lock.acquire()
@@ -77,16 +85,20 @@ def running():
             time.sleep(3)
             lock.release()
             check = HOLD
+
+        #Adjust robot to wall.
         if (check == ADJUST && dockStatus = 0):
             lock.acquire()
             speed_left = INIT_V
             speed_right = INIT_V
             print "---------------------"
             print "Adjusting..."
+
             if (u_t > 0.0):
                 u_t = u_t/2
                 speed_right = speed_right - u_t
                 speed_left = speed_left + u_t
+
             else:
                 change = math.fabs(u_t)/2
                 speed_right = speed_right + change
@@ -97,10 +109,13 @@ def running():
             r.driveDirect(int(speed_left), int(speed_right))
             lock.release()
             check = HOLD
+
+        #End of wall. Turn towards the wall.
         if(check == ARC && dockStatus = 0):
             lock.acquire()
             wallDist= r.lightBumpRight()
             lock.release()
+
             while (wallDist < 2):
               speed_left = int(setPoint) 
               speed_right = 2
@@ -110,42 +125,53 @@ def running():
               lock.release()
               time.sleep(0.2)
             check = HOLD
+
+        #Approaching corner of wall, turn left.
         if (check == ROTATE && dockStatus = 0):
             lock.acquire()
             wallFront = r.lightBumpCenterRight()
+
             while (wallFront > 3):
                r.driveDirect(10, -10)
                time.sleep(0.2)
                wallFront = r.lightBumpCenterRight()
             lock.release()
             check = HOLD
+
         if (check == DOCK_FORWARD):
             #TODO pick up the front both
+
         if (check == DOCK_FRONT_LEFT):
             #TODO pick up the front GREEN
+
         if (check == DOCK_FRONT_RIGHT):
             #TODO pick up the front RED
+
         if (check == DOCK_LEFT):
             #TODO NOT pick up the front LEFT got something
+
         if (check == DOCK_RIGHT):
             #TODO pick up the front RIGHT got something
          
 
 #Function associated with 'thread2'. The function keeps track of the button presses and sets the robot
-# to the appropriate state when a button press is detected.
+#to the appropriate state when a button press is detected.
 def buttonPressCheck():
     global check
     global buttonState
+
     while 1:
         lock.acquire()
         byte = r.readingButton()
         lock.release()
         button = byte[3]
+
         if (button == '1' and buttonState == 0):
             check = GO
             time.sleep(1)
             buttonState = 1
             button = 0
+
         if (button == '1' and buttonState == 1):
             check = STOP
             time.sleep(1)
@@ -176,6 +202,7 @@ def PID_Control():
     x_1 = 0
     x_2 = 0
     x_3 = 0
+
     while dockStatus == 0:    
         lock.acquire()
         wallDist = r.lightBumpRight()
@@ -187,6 +214,7 @@ def PID_Control():
         print "-------"
         print "Wall Dist = " +str(wallDist)
         print "Wall Front = " +str(wallFront)
+
         if (x_1 > 1 and x_2 > 1 and x_3 > 1 and wallDist > 1):
             e_1 = x_1 - setPoint
             e_2 = x_2 - setPoint
@@ -197,10 +225,15 @@ def PID_Control():
             u_t = u_p + u_i + u_d
         
         print "U_T = " +str(math.fabs(u_t))
+
         if (math.fabs(u_t) > 0.5 and buttonState == 1):
             check = ADJUST
+
+        #Wall is lost.
         elif (wallDist < 1):
             check = ARC
+
+        #Approaching wall forward.
         if (wallFront > 10):
             check = ROTATE
         time.sleep(dT)
@@ -208,6 +241,7 @@ def PID_Control():
 #This function is associated with 'thread4'. It is responsible for checking if the wheel drop or bumper sensors go off.
 def sensorCheck():
     global check
+
     while 1:
         lock.acquire()
         byte = r.readingBumpWheel()
@@ -216,10 +250,13 @@ def sensorCheck():
         b2 = byte[2]
         b3 = byte[1]
         b4 = byte[0]
+
         if (b1 == '1'):
             check = HAZARD
+
         if (b2 == '1'):
             check = HAZARD
+
         if (b3 == '1' or b4 == '1'):
             check = WHEEL_DROP
         time.sleep(0.015)
@@ -228,32 +265,44 @@ def sensorCheck():
 def dock():
     global check
     global dockStatus
+
     while 1:
-      both = r.dockOmni()
+      firstcount = 0  
+      omni = r.dockOmni()
       time.sleep(0.25)
       right = r.dockRight()
       time.sleep(0.25)
       left = r.dockLeft()
       time.sleep(0.25)
       check = HOLD
-      if(both != 0 or right!= 0 or left != 0):
-        dockStatus = 1
-      if(both == 172 or both == 161 or both == 173):
+
+      if(firstcount = 0 and (left = 164 or left = 165 or left = 168 or left = 169))
+        firstcount++
+        check = dockArc
+        
+      if(omni != 0 or right!= 0 or left != 0):
+        #dockStatus = 1
+
+      if(omni == 172 or omni == 173):
         check = DOCK_FORWARD
-      elif(both == 164 or both == 165):
+
+      elif(omni == 164 or omni == 165):
         check = DOCK_FRONT_LEFT
-      elif(both == 168 or both == 169):
+        shift right
+
+      elif(omni == 168 or omni == 169):
         check = DOCK_FRONT_RIGHT
-      elif(both == 0):
+        shift left
+
+      elif(omni == 0):
+
         if(right != 0):
           check = DOCK_RIGHT
+          shift left
+
         elif(left != 0):
           check = DOCK_LEFT
-
-
-
-
-     
+          shift right
 
 #Here, the robot is set to the appropriate mode and all the threads are started.
 r.toStop()
@@ -262,17 +311,22 @@ r.toStart()
 time.sleep(1.5)
 r.toSafe()
 time.sleep(1.5)
+
 r.setWarningSong()
 r.setStartSong()
 time.sleep(1)
 r.playStartSong()
 time.sleep(4)
+
+#Start threads.
 print "start"
+
 t1 = threading.Thread(name='running', target=running)
 t2 = threading.Thread(name='buttonPressCheck', target=buttonPressCheck)
 t3 = threading.Thread(name='PID_Control', target=PID_Control)
 t4 = threading.Thread(name='sensorCheck', target=sensorCheck)
 t5 = threading.Thread(name='dock', target=dock)
+
 t1.start()
 t2.start()
 t3.start()

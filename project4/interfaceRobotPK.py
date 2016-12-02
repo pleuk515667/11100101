@@ -57,8 +57,10 @@ class Robot:
     def readStatus(self):
         data = self.ser.read(1)
         byte = -1
+
         if (data != ''):
             byte = struct.unpack('B', data)[0]
+
         return byte
 
     #Changes mode to "Passive"
@@ -144,25 +146,35 @@ class Robot:
     # This function will drive the robot by calling the drive function
     # set speed and radius and turn clockwise and counter clockwise
     def drive(self, speed, radius, turn):
+
         if type(speed) != type(42):
             speed = int(speed)
+
         if type(radius) != type(42):
             speed = int(speed)
+
         if speed < -500:
             speed = -500
+
         if speed > 500:
             speed = 500
+
         if radius > 2000:
             radius = 32768
+
         if radius < -2000:
             radius = 32768
+
         speedHi, speedLow = self.splitTo2Byte(speed)
 
         if radius == 0:
+
             if turn == 'CW':
                 radius = -1
+
             else:
                 radius = 1
+
         radiusHi, radiusLow = self.splitTo2Byte(radius)
         self.writeCommand(137)
         self.writeCommand(speedHi)
@@ -172,32 +184,42 @@ class Robot:
 
     # calling drive and sending data to drive which is a speed of the wheel and degree
     def go(self, speed=0, deg=0):
+
         if speed == 0:
             dirst = None
             rad = math.radians(deg)
+
             if rad >= 0:
                 dirst = 'CCW'
             else:
                 dirst = 'CW'
+
             finalSpeed = math.fabs(rad) * (self.Wheel / 2.0)
             self.drive(finalSpeed, 0, dirst)
+
         elif deg == 0:
             finalSpeed = 10.0 * speed
             rad = 32767
             self.drive(finalSpeed, rad, "CW")
+
         else:
             dirst = None
             radSpeed = math.radians(deg)
             finalSpeed = 10 * speed
             rad = finalSpeed / radSpeed
+
             if rad > 32767:
                 rad = 32767
+
             if rad < -32767:
                 rad = -32767
+
             if rad >= 0:
                 dirst = 'CCW'
+
             else:
                 dirst = 'CW'
+
             self.drive(finalSpeed, rad, dirst)
         return
 
@@ -208,12 +230,16 @@ class Robot:
         speedLeft = speedLeft * 10
         if speedRight < -500:
             speedRight = -500
+
         if speedRight > 500:
             speedRight = 500
+
         if speedLeft < -500:
             speedLeft = -500
+
         if speedLeft > 500:
             speedLeft = 500
+
         speedRightHi, speedRightLow = self.splitTo2Byte(speedRight)
         speedLeftHi, speedLeftLow = self.splitTo2Byte(speedLeft)
         self.writeCommand(145)
@@ -225,6 +251,7 @@ class Robot:
     #Several of the following function set a song or play a song
     def setWarningSong(self):
         self.writeCommand(WRITE_SONG)
+
         for i in warningSong:
             self.writeCommand(i)
 
@@ -234,6 +261,7 @@ class Robot:
 
     def setStartSong(self):
         self.writeCommand(WRITE_SONG)
+
         for i in startSong:
             self.writeCommand(i)
 
@@ -247,9 +275,11 @@ class Robot:
         self.writeCommand(LB_LEFT)
         data = self.ser.read(2)
         byte = -1
+
         if (data != ''):
           byte = struct.unpack('>h', data)[0]
           byte = math.sqrt(byte)
+
         return byte
 
         
@@ -258,10 +288,12 @@ class Robot:
         self.writeCommand(LB_RIGHT)
         data = self.ser.read(2)
         byte = -1
+
         if (data != ''):
           byte = struct.unpack('>h', data)[0]
           byte = math.fabs(byte)
           byte = math.sqrt(byte)   
+
         return byte
         
     def lightBumpCenterRight(self):
@@ -269,9 +301,11 @@ class Robot:
         self.writeCommand(LB_CR)
         data = self.ser.read(2)
         byte = -1
+
         if (data != ''):
           byte = struct.unpack('>h', data)[0]
           byte = math.sqrt(byte)
+
         return byte
         
     def lightBumper(self):
@@ -285,6 +319,7 @@ class Robot:
         self.writeCommand(DOCK_OMNI)
         byte = self.readStatus()
         return byte
+
     def dockRight(self):
         self.writeCommand(SENSOR)
         self.writeCommand(DOCK_RIGHT)
@@ -301,12 +336,15 @@ class Robot:
         self.writeCommand(CHARGING)
         byte = self.readStatus()
         return byte 
+
     # spit value in to high and low bitwise
     def splitTo2Byte(self, value):
         bitValue = 0
+
         if value >= 0:
             bitValue = value
+
         else:
             bitValue = (1 << 16) + value
+
         return ((bitValue >> 8) & 0xFF, bitValue & 0xFF)
-        
